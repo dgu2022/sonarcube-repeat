@@ -409,7 +409,7 @@ def get_score_project(fdict_user, flist_language, fname):
 
     dict_score_db = dict()
     dict_score_db['project_name'] = NAME
-    # dict_score_db['used_stack'] = get_list_file_stack(flist_language, NAME)
+    dict_score_db['used_stack'] = get_list_file_stack(flist_language, NAME)
     dict_score_db['popularity_watch'] = popularity_watch
     dict_score_db['popularity_star'] = popularity_star
     dict_score_db['popularity_fork'] = popularity_fork

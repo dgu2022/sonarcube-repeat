@@ -1,5 +1,12 @@
 from common_variable import *
 
+USER = 'dgu2022'
+CREATE_NAME = 'dgu2022-test'
+PROJECT_NAME = 'sonarcube-repeat'
+ORG = 'dgu2022'
+SC_ORG = 'dgu2022'
+METRIC = 'complexity,cognitive_complexity,duplicated_lines_density,code_smells,bugs,vulnerabilities,comment_lines'
+
 # sonarcloud에 전달할 목적으로 깃허브 레포지토리 id 가져오기
 def get_project_id_gh2sc(GITHUB_API_TOKEN, NAME):
     GH_REPO = '%s/repos/%s' % (GH_API, NAME)
@@ -134,20 +141,14 @@ def delete_project(key, SC_ORG, SC_TOKEN):
     return response
 
 
-def get_score_sonarcloud(NAME):
-
-    USER = 'dgu2022'
-    CREATE_NAME = 'dgu2022-test'
-    PROJECT_NAME = 'sonarcube-repeat'
-    ORG = 'dgu2022'
-    SC_ORG = 'dgu2022'
-    METRIC = 'complexity,cognitive_complexity,duplicated_lines_density,code_smells,bugs,vulnerabilities,comment_lines'
+def get_score_sonarcloud(USERNAME, NAME):
 
     SC_GH_ORG = NAME.split('/')[0]
     SC_GH_REPO = NAME.split('/')[-1]
     #SC_GH_ORG = NAME.split('_')[0]
     #SC_GH_REPO = NAME.split('_')[-1]
     SC_GH_KEY = str(get_project_id_gh2sc(GITHUB_API_TOKEN, NAME))
+    URL = "/project/"+USERNAME+"/"+NAME
 
     create_project_linked_github(SC_GH_ORG, SC_GH_REPO, SC_ORG, SC_GH_KEY, SC_TOKEN)
     set_autoscan(SC_GH_ORG, SC_GH_REPO, SC_TOKEN)
