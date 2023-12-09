@@ -8,6 +8,7 @@ import time
 from env import settings
 
 GITHUB_API_TOKEN = settings.GITHUB_API_TOKEN
+SC_TOKEN = settings.SC_TOKEN
 
 MAX_PER_PAGE = 100  # 용량을 줄이기 위해 테스톨 30, 실제로는 100
 MIN_CNT_FILE = 3

@@ -342,7 +342,7 @@ def check_cnt_member():
 
 
 # 이상치 제거하는 함수
-def detect_outliers(df, columns):
+def detect_outliers(df, columns, rate):
     MIN_LEN_CODE = 300
     q1 = df[columns].quantile(0.25)
     q3 = df[columns].quantile(0.75)
@@ -351,7 +351,7 @@ def detect_outliers(df, columns):
     iqr = q3 - q1
     # print(iqr)
 
-    boundary = 30 * iqr
+    boundary = rate * iqr
     # print(boundary)
 
     index1 = df[(df[columns] > q3 + boundary) & (df[columns] > MIN_LEN_CODE)].index
@@ -385,7 +385,7 @@ def get_score_project(fdict_user, flist_language, fname):
         '''
         print(fdict_user[member]['cnt_addition'])
         df_addition = pd.DataFrame({'cnt_addition': list(fdict_user[member]['cnt_addition'])})
-        df_addition = detect_outliers(df_addition, 'cnt_addition')
+        df_addition = detect_outliers(df_addition, 'cnt_addition', 30)
         df_addition = df_addition.dropna(axis=0)
         # print(df_addition)
 
