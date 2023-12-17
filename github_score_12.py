@@ -54,35 +54,39 @@ def get_members(fname):
     min_rate_commits = 0.05;  # 상대적-5퍼센트 이상은 돼야 팀원으로 인정
     min_cnt_commits = 10;  # 절대적-10개 이상은 돼야 팀원으로 인정
     response = requests.get('%s' % (GH_REPO), headers=headers)
-    response = response.json()
-    cnt_contributors = len(response)
-    list_name_members = []
-    list_cnt_commits = []
+    try:
+        response = response.json()
+        cnt_contributors = len(response)
+        list_name_members = []
+        list_cnt_commits = []
 
-    for user in response:
-        '''
-        if user['login'] == 'github-actions[bot]':
-            print("github-action")
-            continue
-        '''
-        list_name_members.append(user['login'])
-        list_cnt_commits.append(user['contributions'])
+        for user in response:
+            '''
+            if user['login'] == 'github-actions[bot]':
+                print("github-action")
+                continue
+            '''
+            list_name_members.append(user['login'])
+            list_cnt_commits.append(user['contributions'])
 
-    list_remove_members = []
-    list_remove_commits = []
-    sum_commits = sum(list_cnt_commits)
-    for idx, user in enumerate(list_name_members):
-        if list_cnt_commits[idx] / sum_commits < min_rate_commits or list_cnt_commits[idx] < min_cnt_commits:
-            # del 이 pop보다 미세하게 빠름
-            list_remove_members.append(user)
-            list_remove_commits.append(list_cnt_commits[idx])
+        list_remove_members = []
+        list_remove_commits = []
+        sum_commits = sum(list_cnt_commits)
+        for idx, user in enumerate(list_name_members):
+            if list_cnt_commits[idx] / sum_commits < min_rate_commits or list_cnt_commits[idx] < min_cnt_commits:
+                # del 이 pop보다 미세하게 빠름
+                list_remove_members.append(user)
+                list_remove_commits.append(list_cnt_commits[idx])
 
-    list_name_members_copy = [name for name in list_name_members if name not in list_remove_members]
-    list_cnt_commits_copy = [name for name in list_cnt_commits if name not in list_remove_commits]
+        list_name_members_copy = [name for name in list_name_members if name not in list_remove_members]
+        list_cnt_commits_copy = [name for name in list_cnt_commits if name not in list_remove_commits]
 
-    print(list_name_members_copy)
+        print(list_name_members_copy)
 
-    return list_name_members_copy, list_cnt_commits_copy
+        return list_name_members_copy, list_cnt_commits_copy
+    except Exception as e:
+        print(e)
+        return [], []
 
 
 # Commit Code 가져오는 함수 + 추가한 라인 수도 카운트한 뒤 합해서 전달 (깃허브 점수 2번 구하기 위해)
@@ -198,13 +202,12 @@ def get_list_extension(flist_language):  # 파일의 확장자를 구하는 함�
     return list_extension
 
 
-def get_list_file_stack(flist_language, fname):  # search api 사용해서 기술 스택을 추출하는 함수
+def get_list_file_stack(flist_language, fname, fuser):  # search api 사용해서 기술 스택을 추출하는 함수
     # GH_REPO='%s/search/issues?q=repo:%s/%s+type:pr'%(GH_API, OWNER, REPO)
     # GET https://api.github.com/repos/:owner/:repo/commits?path=FILE_PATH
 
     list_language = flist_language
     NAME = fname
-    fuser = fname.split('/')[0]
 
     list_search = []  # 찾을 키워드 리스트
     list_search.extend(list_language)
@@ -326,7 +329,11 @@ def get_list_file_stack(flist_language, fname):  # search api 사용해서 기�
             print("error idx_lang:" + str(idx_lang))
             print(e)
             time.sleep(5)
-    list_user_stack.extend(list_user_language)
+    print(list_user_language)
+    if len(list_user_language) == 0:
+        list_user_stack.extend(list_language)
+    else:
+        list_user_stack.extend(list_user_language)
     print("final stack_list:" + str(list_user_stack))
 
     return list_user_stack
@@ -363,7 +370,7 @@ def detect_outliers(df, columns, rate):
     return df
 
 
-def get_score_project(fdict_user, flist_language, fname):
+def get_score_project(fdict_user, flist_language, fname, fuser):
     NAME = fname
 
     list_name_members = list(fdict_user.keys())
@@ -395,7 +402,7 @@ def get_score_project(fdict_user, flist_language, fname):
         list_user_code_size.append(sum_cnt_code)
 
     if sum_project_size == 0:
-        return -1
+        return {}, []
 
     list_user_code_size = [size / sum_project_size for size in list_user_code_size]
     user_code_std = np.std(np.array(list_user_code_size))
@@ -409,7 +416,8 @@ def get_score_project(fdict_user, flist_language, fname):
 
     dict_score_db = dict()
     dict_score_db['project_name'] = NAME
-    dict_score_db['used_stack'] = get_list_file_stack(flist_language, NAME)
+    used_stack = get_list_file_stack(flist_language, NAME, fuser)
+    #dict_score_db['used_stack'] = get_list_file_stack(flist_language, NAME)
     dict_score_db['popularity_watch'] = popularity_watch
     dict_score_db['popularity_star'] = popularity_star
     dict_score_db['popularity_fork'] = popularity_fork
@@ -423,14 +431,16 @@ def get_score_project(fdict_user, flist_language, fname):
     # dict_score_db['annotation_rate'] = annotation_rate
 
     print(dict_score_db)
-    return dict_score_db
+    return dict_score_db, used_stack
 
 
 # ---
 
 # Main
 
-def get_score_main(fname):
+def get_score_main(fname, fuser):
+    test = {}
+    used_stack = []
     NAME = fname
     print(NAME)
 
@@ -442,17 +452,14 @@ def get_score_main(fname):
 
     dict_user_commit = dict()
 
-    list_language = get_language(NAME)
-    print(list_language)
-
     list_name_members, list_cnt_commits = get_members(NAME)
 
     if len(list_name_members) < 2:
         print("member 수 부족")
-        return -1
+        return {}, []
 
-    print(list_cnt_commits)
-    print(list_name_members)
+    list_language = get_language(NAME)
+    print(list_language)
 
     for idx, member in enumerate(list_name_members):
         list_url_commit = get_commit_sha(member, list_cnt_commits[idx], NAME)
@@ -466,5 +473,7 @@ def get_score_main(fname):
         # dict_user_commit[member]['cnt_deletion'] = list_cnt_deletion #깃허브 점수 1,2번, 커밋 비율 구할 때 이용
         dict_user_commit[member]['initial'] = is_initial
 
-    test = get_score_project(dict_user_commit, list_language, NAME)
-    return test
+    test, used_stack = get_score_project(dict_user_commit, list_language, NAME, fuser)
+    if len(test) == 0:
+        return {}, []
+    return test, used_stack

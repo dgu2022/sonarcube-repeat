@@ -25,7 +25,7 @@ def get_profile_project_list(fname):
         for repo in list_repo_name:
             GH_REPO += ' -repo:' + repo
 
-        print(GH_REPO)
+        #print(GH_REPO)
 
         response = requests.get('%s' % (GH_REPO), headers=headers)
         response = response.json()

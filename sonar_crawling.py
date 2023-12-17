@@ -89,14 +89,28 @@ def scan_project(SC_GH_ORG, SC_GH_REPO, SC_TOKEN):
     return response
 
 # 프로젝트가 분석이 끝났을 때 분석이 끝났음을 알리는 url을 설정하는 함수
-def create_webhook(SC_GH_ORG, SC_GH_REPO, SC_ORG, URL, SC_TOKEN):
+def create_webhook(SC_GH_ORG, SC_GH_REPO, SC_ORG, INFO, SC_TOKEN):
     data = {
         'name': SC_GH_ORG + '/' + SC_GH_REPO + '_webhook',
         'organization': SC_ORG,
-        'url': 'https://dgu2022.requestcatcher.com/',
+        'url': 'http://43.202.123.199:8080/project/'+INFO.split('/')[0]+'/'+INFO.split('/')[-1] , #URL,
     }
 
     response = requests.post('https://sonarcloud.io/api/webhooks/create', data=data, headers=headers,
+                             auth=(SC_TOKEN, ''))
+
+    if (is_json(response)):
+        response = response.json()
+    print(response)
+    return response
+
+# 프로젝트가 분석이 끝나고 webhook 제거
+def delete_webhook(SC_GH_ORG, SC_GH_REPO, SC_TOKEN):
+    data = {
+        'name': SC_GH_ORG + '/' + SC_GH_REPO + '_webhook',
+    }
+
+    response = requests.post('https://sonarcloud.io/api/webhooks/delete', data=data, headers=headers,
                              auth=(SC_TOKEN, ''))
 
     if (is_json(response)):
@@ -126,7 +140,7 @@ def get_value_metric(SC_GH_ORG, SC_GH_REPO, SC_ORG, METRIC, SC_TOKEN):
 # 프로젝트 지우는 함수
 def delete_project(key, SC_ORG, SC_TOKEN):
     params = {
-        'project': key,
+        'project': key.replace('/','_'),
     }
 
     response = requests.post(
@@ -148,10 +162,10 @@ def get_score_sonarcloud(USERNAME, NAME):
     #SC_GH_ORG = NAME.split('_')[0]
     #SC_GH_REPO = NAME.split('_')[-1]
     SC_GH_KEY = str(get_project_id_gh2sc(GITHUB_API_TOKEN, NAME))
-    URL = "/project/"+USERNAME+"/"+NAME
+    INFO = USERNAME+"/"+NAME
 
     create_project_linked_github(SC_GH_ORG, SC_GH_REPO, SC_ORG, SC_GH_KEY, SC_TOKEN)
     set_autoscan(SC_GH_ORG, SC_GH_REPO, SC_TOKEN)
     scan_project(SC_GH_ORG, SC_GH_REPO, SC_TOKEN)
-    create_webhook(SC_GH_ORG, SC_GH_REPO, SC_ORG, URL, SC_TOKEN)
+    #create_webhook(SC_GH_ORG, SC_GH_REPO, SC_ORG, INFO, SC_TOKEN)
 
