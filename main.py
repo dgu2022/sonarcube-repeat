@@ -256,13 +256,12 @@ def post_score(name: str):
             list_in_dict.append({'githubId' : name, 'stack' : key, 'score' : dict_stack_score_last[key]})
         dict_last = {'data' : list_in_dict}
 
-        response = requests.post('user/put/newscore', data=dict_last)
+        #response = requests.post('user/put/newscore', data=dict_last)
 
         #return dict_stack_score_last
         print(dict_last)
         print("end")
-        return 0
-
+        return dict_last
 
 
 
