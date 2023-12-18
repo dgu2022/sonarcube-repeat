@@ -112,9 +112,14 @@ def get_commit_code(flist_language, list_furl, fname):
             response = response.json()
 
             # print(response['files'])
-
+            '''
             if response['commit']['verification']['verified'] == True:
                 # print("verified")
+                idx += 1
+                continue
+            '''
+            if 'Merge pull request' in response['commit']['message']:
+                # print("merged")
                 idx += 1
                 continue
 
@@ -374,6 +379,7 @@ def get_score_project(fdict_user, flist_language, fname, fuser):
     NAME = fname
 
     list_name_members = list(fdict_user.keys())
+    print(list_name_members)
     sum_project_size = 0
     sum_cnt_annotation = 0
     list_user_code_size = []
@@ -402,6 +408,7 @@ def get_score_project(fdict_user, flist_language, fname, fuser):
         list_user_code_size.append(sum_cnt_code)
 
     if sum_project_size == 0:
+        print("size")
         return {}, []
 
     list_user_code_size = [size / sum_project_size for size in list_user_code_size]

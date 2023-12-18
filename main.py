@@ -41,6 +41,15 @@ def post_score(name: str):
     print(list_project_name)
     user = name
     list_project_stack_base = []
+    list_back = []
+    list_next = []
+    print(list_project_name)
+    for pr_name in list_project_name:
+        pr_back = pr_name.split('/')[-1]
+        if pr_back not in list_back:
+            list_back.append(pr_back)
+            list_next.append(pr_name)
+    list_project_name = list_next
     with open('%s_sonar_data.pkl' % (user), 'wb') as f:
         pickle.dump([], f)
     if len(list_project_name) < 1:
@@ -65,7 +74,7 @@ def post_score(name: str):
             list_project_name_last.append(project_name)
             list_project_score_gh.append(dict_project_score)
             list_project_stack_base.append(list_project_stack)
-            break
+            #break
         project_idx = 0
         print(list_project_name_last)
         while project_idx < len(list_project_name_last):
@@ -117,13 +126,17 @@ def post_score(name: str):
             for key, value in project.items():
                 sonar_dict[key].append(value)
 
-        # common_gh_sc_list = list(set(sonar_dict['project_name']) & set(github_dict['project_name']))
+        print(sonar_dict)
+        print(github_dict)
 
+        common_gh_sc_list = list(set(sonar_dict['project_name']) & set(github_dict['project_name']))
+
+        '''
         sonar_dict.update(github_dict)
         common_gh_sc_dict = sonar_dict
 
         for key in list(common_gh_sc_dict.keys()):
-            if len(common_gh_sc_dict[key]) != len(common_gh_sc_dict['project_name']):
+            if len(common_gh_sc_dict[key]) < len(common_gh_sc_dict['project_name']):
                 diff = len(common_gh_sc_dict['project_name']) - len(common_gh_sc_dict[key])
                 for i in range(diff):
                     common_gh_sc_dict[key].append(0)
@@ -146,7 +159,7 @@ def post_score(name: str):
             for key in list(github_dict.keys()):
                 if key != 'project_name':
                     common_gh_sc_dict[key].append(github_dict[key][github_idx])
-        '''
+        #'''
 
         df_sc_gh = pd.DataFrame(common_gh_sc_dict)
         print(df_sc_gh)
@@ -219,7 +232,7 @@ def post_score(name: str):
             filter = (df_normalization.project_name == project_name)
             df_last = df_normalization.loc[filter, :]
             df_last = df_last.fillna(0)
-            print(list(df_last.columns))
+            print(df_last)
             project_score = df_last['comment_rate'] + df_last['bugs_rate'] + df_last['code_smells_rate'] + df_last['vulnerabilities_rate'] + \
                             df_last['duplication_rate'] + 0.5 * df_last['complexity1'] + 0.5 * df_last['complexity2'] + df_last['popularity_watch'] / 3 + \
                             df_last['popularity_star'] / 3 + df_last['popularity_fork'] / 3 + 0.2 * df_last['usability_pr'] + 0.2 * df_last['usability_tag'] + \
