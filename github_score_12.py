@@ -353,6 +353,22 @@ def check_cnt_member():
         return False
 
 
+def get_mean(input_list):
+    res = []
+    for number in input_list:
+        res.append(number)
+    return sum(res) / len(res)
+
+
+def get_stdev(input_list):
+    mean = get_mean(input_list)
+    # 두 함수는 서로 모르는 사이이기 때문에, 아는 사이로 만들어주기
+    stdev_list = []
+    for number in input_list:
+        stdev_list.append((number - mean) ** 2)
+    return (sum(stdev_list) / (len(input_list) - 1)) ** 0.5
+
+
 # 이상치 제거하는 함수
 def detect_outliers(df, columns, rate):
     MIN_LEN_CODE = 300
@@ -412,7 +428,7 @@ def get_score_project(fdict_user, flist_language, fname, fuser):
         return {}, []
 
     list_user_code_size = [size / sum_project_size for size in list_user_code_size]
-    user_code_std = np.std(np.array(list_user_code_size))
+    user_code_std = get_stdev(list_user_code_size)
 
     print("관심도 구하는 중")
     popularity_watch, popularity_star, popularity_fork = get_cnt_popularity(NAME)
