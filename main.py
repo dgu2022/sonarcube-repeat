@@ -7,33 +7,9 @@ import pickle
 
 app = FastAPI()
 
-@app.get("/project/{user}/{project_name}")
+@app.get("/")
 def get_score(project_name: str, user: str):
-    NAME = project_name
-    SC_GH_ORG = NAME.split('/')[0]
-    SC_GH_REPO = NAME.split('/')[-1]
-    response = get_value_metric(SC_GH_ORG, SC_GH_REPO, SC_ORG, METRIC, SC_TOKEN)
-
-    list_project_score_sc = []
-
-    score = response['component']
-    dict_project_score_sc = {'project_name': score['key'].replace('_', '/')}
-    for measure in score['measures']:
-        dict_project_score_sc[measure['metric']] = measure['value']
-    list_project_score_sc.append(dict_project_score_sc)
-
-    delete_project(NAME, SC_ORG, SC_TOKEN)
-    delete_webhook(NAME.replace("_","/")+"_webhook")
-
-    with open('%s_sonar_data.pkl'%(user), 'rb') as f:
-        list_project_score = pickle.load(f)
-
-    list_project_score.extend(list_project_score_sc)
-
-    with open('%s_sonar_data.pkl'%(user), 'wb') as f:
-        pickle.dump(list_project_score, f)
-
-    return 0
+    return 'hi'
 
 @app.post("/")
 def post_score(name: str):
