@@ -105,9 +105,9 @@ def post_score(name: str):
         print(sonar_dict)
         print(github_dict)
 
-        common_gh_sc_list = list(set(sonar_dict['project_name']) & set(github_dict['project_name']))
+        #common_gh_sc_list = list(set(sonar_dict['project_name']) & set(github_dict['project_name']))
 
-        '''
+        #'''
         sonar_dict.update(github_dict)
         common_gh_sc_dict = sonar_dict
 
@@ -135,7 +135,7 @@ def post_score(name: str):
             for key in list(github_dict.keys()):
                 if key != 'project_name':
                     common_gh_sc_dict[key].append(github_dict[key][github_idx])
-        #'''
+        '''
 
         df_sc_gh = pd.DataFrame(common_gh_sc_dict)
         print(df_sc_gh)
