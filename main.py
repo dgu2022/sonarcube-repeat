@@ -50,7 +50,7 @@ def post_score(name: str):
             list_project_name_last.append(project_name)
             list_project_score_gh.append(dict_project_score)
             list_project_stack_base.append(list_project_stack)
-            #break
+            break
         project_idx = 0
         print(list_project_name_last)
         while project_idx < len(list_project_name_last):
@@ -232,7 +232,7 @@ def post_score(name: str):
             list_in_dict.append({'githubId' : name, 'stack' : key, 'score' : dict_stack_score_last[key]})
         dict_last = {'data' : list_in_dict}
 
-        #response = requests.post('user/put/newscore', data=dict_last)
+        response = requests.post('http://13.125.87.187:8080/user/put/newscore', data=dict_last)
 
         #return dict_stack_score_last
         print(dict_last)
